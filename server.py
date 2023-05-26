@@ -7,7 +7,6 @@ import base64
 public_private_keys = {}
 public_rsa_encrypted_aes_keys = {}
 
-
 def generate_public_private_rsa_keys():
     modulus_length = 2048
     key = RSA.generate(modulus_length)
@@ -29,25 +28,39 @@ def decrypt_rsa(encoded_encrypted_msg, key):
 def get_public_key():
     private, public = generate_public_private_rsa_keys()
     public_key_bytes = public.export_key('PEM')
+    private_key_bytes = private.export_key('PEM')
     public_private_keys[public_key_bytes] = private
+    
+    print("The generated public key:")
+    print(public_key_bytes)
+    print("The generated private key:")
+    print(private_key_bytes)
+    
     return public_key_bytes
 
 
 def get_public_key_request(server_socket, client_socket):
+    print("Received a request to generate a public/private key pair and send the public key to the client.")
     response = get_public_key()
     client_socket.send(response)
     client_socket.close()
+    print("Public key sent to the client.")
 
 
 def post_encrypted_aes_request(server_socket, client_socket):
+    print("Received the encrypted AES key from the client.")
     client_socket.close()
 
     client_socket, addr = server_socket.accept()
     encrypted_aes_key = client_socket.recv(1024).decode('UTF-8')
+    print("The encrypted AES key:")
+    print(encrypted_aes_key)
     client_socket.close()
 
     client_socket, addr = server_socket.accept()
     public_key_bytes = client_socket.recv(1024)
+    print("This encrypted AES key belongs to client with public key:")
+    print(public_key_bytes)
     public_rsa_encrypted_aes_keys[public_key_bytes] = encrypted_aes_key
     client_socket.send(
         'Encrypted AES Key Saved Successfully In Server'.encode('UTF-8'))
@@ -55,18 +68,24 @@ def post_encrypted_aes_request(server_socket, client_socket):
 
 
 def get_decrypted_aes(server_socket, client_socket):
+    print("Received a request to decrypt the AES key and send it to the client.")
     client_socket.close()
 
     client_socket, addr = server_socket.accept()
     public_key_bytes = client_socket.recv(1024)
+    print("Request came from client with public key:")
+    print(public_key_bytes)
     private_key = public_private_keys[public_key_bytes]
 
     encrypted_aes_key = public_rsa_encrypted_aes_keys[public_key_bytes].encode(
         'UTF-8')
     decrypted_aes_key = decrypt_rsa(encrypted_aes_key, private_key)
+    print("The decrypted AES key:")
+    print(decrypted_aes_key)
 
     client_socket.send(decrypted_aes_key)
     client_socket.close()
+    print("The decrypted AES key was sent to the client.")
 
 
 def main():
@@ -81,7 +100,7 @@ def main():
         client_socket, addr = server_socket.accept()
 
         request = client_socket.recv(1024).decode('UTF-8')
-        print(request)
+        # print(request)
 
         response = 'No Response'.encode('UTF-8')
         if request == 'get_public_key':
@@ -91,6 +110,7 @@ def main():
         elif request == 'get_decrypted_aes':
             get_decrypted_aes(server_socket, client_socket)
         else:
+            print("Received an unidentified request.")
             client_socket.send(response)
             client_socket.close()
 
