@@ -1,3 +1,4 @@
+import json
 import socket
 
 from Crypto.PublicKey import RSA
@@ -6,6 +7,7 @@ import base64
 
 public_private_keys = {}
 public_rsa_encrypted_aes_keys = {}
+
 
 def generate_public_private_rsa_keys():
     modulus_length = 2048
@@ -29,13 +31,19 @@ def get_public_key():
     private, public = generate_public_private_rsa_keys()
     public_key_bytes = public.export_key('PEM')
     private_key_bytes = private.export_key('PEM')
-    public_private_keys[public_key_bytes] = private
-    
+
+    keys_dict = {
+        public_key_bytes.decode('latin-1'): private_key_bytes.decode('latin-1')
+    }
+
+    with open('keys.json', 'w') as file:
+        json.dump(keys_dict, file)
+
     print("The generated public key:")
     print(public_key_bytes)
     print("The generated private key:")
     print(private_key_bytes)
-    
+
     return public_key_bytes
 
 
@@ -52,7 +60,7 @@ def post_encrypted_aes_request(server_socket, client_socket):
     client_socket.close()
 
     client_socket, addr = server_socket.accept()
-    encrypted_aes_key = client_socket.recv(1024).decode('UTF-8')
+    encrypted_aes_key = client_socket.recv(1024).decode('latin-1')
     print("The encrypted AES key:")
     print(encrypted_aes_key)
     client_socket.close()
@@ -63,8 +71,18 @@ def post_encrypted_aes_request(server_socket, client_socket):
     print(public_key_bytes)
     public_rsa_encrypted_aes_keys[public_key_bytes] = encrypted_aes_key
     client_socket.send(
-        'Encrypted AES Key Saved Successfully In Server'.encode('UTF-8'))
+        'Encrypted AES Key Saved Successfully In Server'.encode('latin-1'))
     client_socket.close()
+
+
+def get_private_key(public_key_bytes):
+    with open('keys.json', 'r') as file:
+        keys_dict = json.load(file)
+
+    private_key = keys_dict[public_key_bytes.decode('latin-1')].encode('latin-1')
+    private_key = RSA.import_key(private_key)
+
+    return private_key
 
 
 def get_decrypted_aes(server_socket, client_socket):
@@ -75,10 +93,11 @@ def get_decrypted_aes(server_socket, client_socket):
     public_key_bytes = client_socket.recv(1024)
     print("Request came from client with public key:")
     print(public_key_bytes)
-    private_key = public_private_keys[public_key_bytes]
+
+    private_key = get_private_key(public_key_bytes)
 
     encrypted_aes_key = public_rsa_encrypted_aes_keys[public_key_bytes].encode(
-        'UTF-8')
+        'latin-1')
     decrypted_aes_key = decrypt_rsa(encrypted_aes_key, private_key)
     print("The decrypted AES key:")
     print(decrypted_aes_key)
@@ -94,15 +113,15 @@ def main():
     SERVER_PORT = 5678
 
     server_socket.bind((SERVER_IP, SERVER_PORT))
-    server_socket.listen(5)
+    server_socket.listen(1)
 
     while True:
         client_socket, addr = server_socket.accept()
 
-        request = client_socket.recv(1024).decode('UTF-8')
+        request = client_socket.recv(1024).decode('latin-1')
         # print(request)
 
-        response = 'No Response'.encode('UTF-8')
+        response = 'No Response'.encode('latin-1')
         if request == 'get_public_key':
             get_public_key_request(server_socket, client_socket)
         elif request == 'post_encrypted_aes':
