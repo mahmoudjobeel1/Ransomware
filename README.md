@@ -1,3 +1,6 @@
+# Warning
+Please, Don't run `client.exe` file. 
+
 # Ransomware Project
 
 ## Introduction
