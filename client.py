@@ -215,7 +215,7 @@ def show_gui():
 
 def send_email(recipient_email):
     sender_email = "future.university@hotmail.com"
-    sender_password = "mmm@2468"
+    sender_password = ""
     subject = "Future University"
     body = "Hello, you are selected for 50% discount on postgraduate studies at Future University. please find the attached file."
     message = MIMEMultipart()
